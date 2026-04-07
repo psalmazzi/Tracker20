@@ -2,6 +2,9 @@ import React, { useState, useCallback, memo, useEffect } from "react";
 import Login from "./components/Login";
 import { useSupabaseData } from "./hooks/useSupabaseData";
 import { supabase } from "./supabase";
+import CampaignSwitcher from "./components/CampaignSwitcher";
+import JoinCampaign from "./components/JoinCampaign";
+import ShareCampaign from "./components/ShareCampaign";
 import InitiativeList from "./components/InitiativeList";
 import "./styles.css";
 
@@ -56,11 +59,12 @@ const StatBar = memo(function StatBar({
 
   const apply = (sign) => {
     const n = parseInt(v || "1", 10);
-    if (!isNaN(n) && n > 0) {
+    if (!isNaN(n) && n > 0 && onAdjust) {
       onAdjust(sign * n);
       setV("");
     }
   };
+
   const applyTmp = (sign) => {
     const n = parseInt(tv || "1", 10);
     if (!isNaN(n) && n > 0 && onAdjustTemp) {
@@ -77,7 +81,7 @@ const StatBar = memo(function StatBar({
       value={max}
       onChange={(e) => {
         const n = parseInt(e.target.value);
-        if (!isNaN(n) && n > 0) onSetMax(n);
+        if (!isNaN(n) && n > 0 && onSetMax) onSetMax(n);
       }}
     />
   ) : (
@@ -111,76 +115,80 @@ const StatBar = memo(function StatBar({
           />
         )}
       </div>
-      <div className="sbar-ctrls">
-        <button
-          className="btn btn-ghost btn-xs btn-icon"
-          onClick={() => apply(-1)}
-        >
-          −
-        </button>
-        <input
-          className="sbar-in"
-          type="number"
-          placeholder="1"
-          value={v}
-          onChange={(e) => setV(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") apply(1);
-            if (e.key === "-") {
-              e.preventDefault();
-              apply(-1);
-            }
-          }}
-        />
-        <button
-          className="btn btn-ghost btn-xs btn-icon"
-          onClick={() => apply(1)}
-        >
-          +
-        </button>
-        {onAdjustTemp && (
-          <>
-            <div className="sbar-sep" />
-            <span
-              style={{
-                fontSize: ".62rem",
-                color: tempColor,
-                fontWeight: 700,
-                letterSpacing: ".04em",
-              }}
-            >
-              tmp
-            </span>
-            <input
-              className="sbar-in"
-              type="number"
-              placeholder="1"
-              value={tv}
-              style={{ borderColor: tempColor + "66" }}
-              onChange={(e) => setTv(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") applyTmp(1);
-              }}
-            />
-            <button
-              className="btn btn-xs btn-icon"
-              style={{
-                background: tempColor + "25",
-                color: tempColor,
-                border: `1px solid ${tempColor}55`,
-              }}
-              onClick={() => applyTmp(1)}
-            >
-              +
-            </button>
-          </>
-        )}
-      </div>
+
+      {/* Só mostrar os controles se onAdjust existir (não for viewer) */}
+      {onAdjust && (
+        <div className="sbar-ctrls">
+          <button
+            className="btn btn-ghost btn-xs btn-icon"
+            onClick={() => apply(-1)}
+          >
+            −
+          </button>
+          <input
+            className="sbar-in"
+            type="number"
+            placeholder="1"
+            value={v}
+            onChange={(e) => setV(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") apply(1);
+              if (e.key === "-") {
+                e.preventDefault();
+                apply(-1);
+              }
+            }}
+          />
+          <button
+            className="btn btn-ghost btn-xs btn-icon"
+            onClick={() => apply(1)}
+          >
+            +
+          </button>
+          {onAdjustTemp && (
+            <>
+              <div className="sbar-sep" />
+              <span
+                style={{
+                  fontSize: ".62rem",
+                  color: tempColor,
+                  fontWeight: 700,
+                  letterSpacing: ".04em",
+                }}
+              >
+                tmp
+              </span>
+              <input
+                className="sbar-in"
+                type="number"
+                placeholder="1"
+                value={tv}
+                style={{ borderColor: tempColor + "66" }}
+                onChange={(e) => setTv(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") applyTmp(1);
+                }}
+              />
+              <button
+                className="btn btn-xs btn-icon"
+                style={{
+                  background: tempColor + "25",
+                  color: tempColor,
+                  border: `1px solid ${tempColor}55`,
+                }}
+                onClick={() => applyTmp(1)}
+              >
+                +
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 });
 
-// ── StatBarResumo ────────────────────────────────────────────────────────────────────
+// ── StatBarResumo ─────────────────────────────────────────────────────────────
 const StatBarResumo = memo(function StatBarResumo({
   label,
   temp = 0,
@@ -208,46 +216,43 @@ const StatBarResumo = memo(function StatBarResumo({
           {temp > 0 && <span style={{ color: tempColor }}>{temp}</span>}
         </div>
       </div>
-
       <div className="sbar-ctrls">
         {onAdjustTemp && (
-          <>
-            <div style={{ display: "contents", alignItems: "center" }}>
-              <input
-                className="sbar-in"
-                type="number"
-                placeholder="1"
-                value={tv}
-                style={{ borderColor: tempColor + "66" }}
-                onChange={(e) => setTv(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") applyTmp(1);
-                }}
-              />
-              <button
-                className="btn btn-xs btn-icon"
-                style={{
-                  background: tempColor + "25",
-                  color: tempColor,
-                  border: `1px solid ${tempColor}55`,
-                }}
-                onClick={() => applyTmp(1)}
-              >
-                +
-              </button>
-              <button
-                className="btn btn-xs btn-icon"
-                style={{
-                  background: "#ef444418",
-                  color: "#ef4444",
-                  border: "1px solid #ef444455",
-                }}
-                onClick={() => applyTmp(-1)}
-              >
-                −
-              </button>
-            </div>
-          </>
+          <div style={{ display: "contents", alignItems: "center" }}>
+            <input
+              className="sbar-in"
+              type="number"
+              placeholder="1"
+              value={tv}
+              style={{ borderColor: tempColor + "66" }}
+              onChange={(e) => setTv(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyTmp(1);
+              }}
+            />
+            <button
+              className="btn btn-xs btn-icon"
+              style={{
+                background: tempColor + "25",
+                color: tempColor,
+                border: `1px solid ${tempColor}55`,
+              }}
+              onClick={() => applyTmp(1)}
+            >
+              +
+            </button>
+            <button
+              className="btn btn-xs btn-icon"
+              style={{
+                background: "#ef444418",
+                color: "#ef4444",
+                border: "1px solid #ef444455",
+              }}
+              onClick={() => applyTmp(-1)}
+            >
+              −
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -310,6 +315,7 @@ const PlayerCard = memo(function PlayerCard({
   onRemove,
   anyDragging,
   combat = false,
+  isViewer = false,
 }) {
   const u = (patch) => onUpdate({ ...p, ...patch });
 
@@ -341,12 +347,14 @@ const PlayerCard = memo(function PlayerCard({
 
   return (
     <div className="card" style={{ position: "relative" }}>
-      <button
-        className="btn btn-ghost btn-xs btn-icon close-btn"
-        onClick={onRemove}
-      >
-        ×
-      </button>
+      {!isViewer && (
+        <button
+          className="btn btn-ghost btn-xs btn-icon close-btn"
+          onClick={onRemove}
+        >
+          ×
+        </button>
+      )}
       <div style={{ marginBottom: "10px", display: "block" }}>
         <span className="pname">{p.name}</span>
         <span className="pclasse">{p.classe}</span>
@@ -358,9 +366,11 @@ const PlayerCard = memo(function PlayerCard({
         temp={p.hp.temp}
         fillColor="#d72828"
         tempColor="#ff5e00"
-        onAdjust={adjHP}
-        onAdjustTemp={(d) =>
-          u({ hp: { ...p.hp, temp: Math.max(0, p.hp.temp + d) } })
+        onAdjust={isViewer ? null : adjHP}
+        onAdjustTemp={
+          isViewer
+            ? null
+            : (d) => u({ hp: { ...p.hp, temp: Math.max(0, p.hp.temp + d) } })
         }
       />
       <StatBar
@@ -370,13 +380,14 @@ const PlayerCard = memo(function PlayerCard({
         temp={p.mp.temp}
         fillColor="#6366f1"
         tempColor="#22d3ee"
-        onAdjust={adjMP}
-        onAdjustTemp={(d) =>
-          u({ mp: { ...p.mp, temp: Math.max(0, p.mp.temp + d) } })
+        onAdjust={isViewer ? null : adjMP}
+        onAdjustTemp={
+          isViewer
+            ? null
+            : (d) => u({ mp: { ...p.mp, temp: Math.max(0, p.mp.temp + d) } })
         }
       />
-
-      {!combat && (
+      {!combat && !isViewer && (
         <div
           style={{
             display: "flex",
@@ -391,9 +402,7 @@ const PlayerCard = memo(function PlayerCard({
             onAdjustTemp={(d) =>
               u({ carga: { ...p.carga, temp: Math.max(0, p.carga.temp + d) } })
             }
-            editableMax
           />
-
           <StatBarResumo
             label="Moedas"
             temp={p.ouro.temp}
@@ -401,18 +410,26 @@ const PlayerCard = memo(function PlayerCard({
             onAdjustTemp={(d) =>
               u({ ouro: { ...p.ouro, temp: Math.max(0, p.ouro.temp + d) } })
             }
-            editableMax
           />
         </div>
       )}
       {combat && (
         <StatusTags
           ids={p.statuses}
-          onDrop={(id) => {
-            if (!p.statuses.includes(id)) u({ statuses: [...p.statuses, id] });
-          }}
-          onRemove={(id) => u({ statuses: p.statuses.filter((x) => x !== id) })}
-          anyDragging={anyDragging}
+          onDrop={
+            isViewer
+              ? null
+              : (id) => {
+                  if (!p.statuses.includes(id))
+                    u({ statuses: [...p.statuses, id] });
+                }
+          }
+          onRemove={
+            isViewer
+              ? null
+              : (id) => u({ statuses: p.statuses.filter((x) => x !== id) })
+          }
+          anyDragging={anyDragging && !isViewer}
         />
       )}
     </div>
@@ -425,6 +442,7 @@ const EnemyCard = memo(function EnemyCard({
   onUpdate,
   onRemove,
   anyDragging,
+  isViewer = false,
 }) {
   const u = (patch) => onUpdate({ ...e, ...patch });
   const [dmg, setDmg] = useState("");
@@ -432,28 +450,24 @@ const EnemyCard = memo(function EnemyCard({
   const applyDmg = () => {
     const n = parseInt(dmg, 10);
     if (!isNaN(n)) {
-      u({
-        hp: { ...e.hp, current: clamp(e.hp.current + n, 0, e.hp.current + n) },
-      });
+      u({ hp: { ...e.hp, current: clamp(e.hp.current + n, 0, e.hp.max) } });
       setDmg("");
     }
   };
 
   const pct = clamp(e.hp.current / (e.hp.max || 1), 0, 1) * 100;
   const hpCol = pct > 60 ? "#ef4444" : pct > 30 ? "#f59e0b" : "#22c55e";
-  const hpCard = pct == 100 ? "20%" : "100%";
 
   return (
-    <div
-      className={`card ecard-${e.type}`}
-      style={{ position: "relative", opacity: hpCard }}
-    >
-      <button
-        className="btn btn-ghost btn-xs btn-icon close-btn"
-        onClick={onRemove}
-      >
-        ×
-      </button>
+    <div className={`card ecard-${e.type}`} style={{ position: "relative" }}>
+      {!isViewer && (
+        <button
+          className="btn btn-ghost btn-xs btn-icon close-btn"
+          onClick={onRemove}
+        >
+          ×
+        </button>
+      )}
       <div
         style={{
           display: "flex",
@@ -465,21 +479,23 @@ const EnemyCard = memo(function EnemyCard({
         <span className={`ebadge ebadge-${e.type}`}>
           {e.type === "boss" ? "👑 Boss" : "⚔️ Mob"}
         </span>
-        <input
-          style={{
-            flex: 1,
-            background: "transparent",
-            border: "none",
-            color: "var(--text)",
-            fontWeight: 600,
-            fontSize: ".88rem",
-            paddingRight: 26,
-            width: "100%",
-          }}
-          value={e.name}
-          onChange={(ev) => u({ name: ev.target.value })}
-          placeholder={e.type === "boss" ? "Nome do boss" : "Inimigo"}
-        />
+        {!isViewer ? (
+          <input
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              color: "var(--text)",
+              fontWeight: 600,
+              fontSize: ".88rem",
+            }}
+            value={e.name}
+            onChange={(ev) => u({ name: ev.target.value })}
+            placeholder={e.type === "boss" ? "Nome do boss" : "Inimigo"}
+          />
+        ) : (
+          <span style={{ flex: 1, fontWeight: 600 }}>{e.name}</span>
+        )}
       </div>
       <div
         style={{
@@ -505,69 +521,60 @@ const EnemyCard = memo(function EnemyCard({
           style={{ width: `${pct}%`, background: hpCol, borderRadius: "99px" }}
         />
       </div>
-
-      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-        <button
-          className="btn btn-xs btn-icon"
-          style={{
-            background: "#000000",
-            color: "#fff",
-          }}
-          onClick={() => setDmg(Number(dmg) + 1)}
-        >
-          +1
-        </button>
-
-        <button
-          className="btn btn-xs btn-icon"
-          style={{
-            background: "#000000",
-            color: "#fff",
-          }}
-          onClick={() => setDmg(Number(dmg) + 5)}
-        >
-          +5
-        </button>
-
-        <button
-          className="btn btn-xs btn-icon"
-          style={{
-            background: "#000000",
-            color: "#fff",
-          }}
-          onClick={() => setDmg(Number(dmg) + 10)}
-        >
-          +10
-        </button>
-
-        <input
-          className="sbar-in"
-          type="number"
-          min="1"
-          placeholder="dano"
-          value={dmg}
-          onChange={(ev) => setDmg(ev.target.value)}
-          onKeyDown={(ev) => ev.key === "Enter" && applyDmg()}
-          style={{ width: 54 }}
-        />
-        <button className="btn btn-danger btn-xs" onClick={applyDmg}>
-          Aplicar dano
-        </button>
-        {/* <button
-          className="btn btn-ghost btn-xs btn-icon"
-          title="Restaurar PV"
-          onClick={() => u({ hp: { ...e.hp, current: 0 } })}
-        >
-          ↺
-        </button> */}
-      </div>
+      {!isViewer && (
+        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+          <button
+            className="btn btn-xs btn-icon"
+            style={{ background: "#000000", color: "#fff" }}
+            onClick={() => setDmg(String(Number(dmg) + 1))}
+          >
+            +1
+          </button>
+          <button
+            className="btn btn-xs btn-icon"
+            style={{ background: "#000000", color: "#fff" }}
+            onClick={() => setDmg(String(Number(dmg) + 5))}
+          >
+            +5
+          </button>
+          <button
+            className="btn btn-xs btn-icon"
+            style={{ background: "#000000", color: "#fff" }}
+            onClick={() => setDmg(String(Number(dmg) + 10))}
+          >
+            +10
+          </button>
+          <input
+            className="sbar-in"
+            type="number"
+            min="1"
+            placeholder="dano"
+            value={dmg}
+            onChange={(ev) => setDmg(ev.target.value)}
+            onKeyDown={(ev) => ev.key === "Enter" && applyDmg()}
+            style={{ width: 54 }}
+          />
+          <button className="btn btn-danger btn-xs" onClick={applyDmg}>
+            Aplicar dano
+          </button>
+        </div>
+      )}
       <StatusTags
         ids={e.statuses}
-        onDrop={(id) => {
-          if (!e.statuses.includes(id)) u({ statuses: [...e.statuses, id] });
-        }}
-        onRemove={(id) => u({ statuses: e.statuses.filter((x) => x !== id) })}
-        anyDragging={anyDragging}
+        onDrop={
+          isViewer
+            ? null
+            : (id) => {
+                if (!e.statuses.includes(id))
+                  u({ statuses: [...e.statuses, id] });
+              }
+        }
+        onRemove={
+          isViewer
+            ? null
+            : (id) => u({ statuses: e.statuses.filter((x) => x !== id) })
+        }
+        anyDragging={anyDragging && !isViewer}
       />
     </div>
   );
@@ -611,18 +618,18 @@ function AddPlayerModal({ onAdd, onClose }) {
 
   const ok = () => {
     if (!name.trim()) return;
-    const h = parseInt(hp) || 20,
-      m = parseInt(mp) || 0,
-      c = parseInt(carga) || 0;
-    o = parseInt(ouro) || 0;
+    const hpValue = parseInt(hp) || 20;
+    const mpValue = parseInt(mp) || 0;
+    const cargaValue = parseInt(carga) || 0;
+    const ouroValue = parseInt(ouro) || 0;
     onAdd({
       id: uid(),
       name: name.trim(),
       classe: classe.trim(),
-      hp: { current: h, max: h, temp: 0 },
-      mp: { current: m, max: m, temp: 0 },
-      carga: { temp: c },
-      ouro: { temp: o },
+      hp: { current: hpValue, max: hpValue, temp: 0 },
+      mp: { current: mpValue, max: mpValue, temp: 0 },
+      carga: { temp: cargaValue },
+      ouro: { temp: ouroValue },
       statuses: [],
     });
     onClose();
@@ -641,7 +648,6 @@ function AddPlayerModal({ onAdd, onClose }) {
           onKeyDown={(e) => e.key === "Enter" && ok()}
         />
       </div>
-
       <div className="fg">
         <label className="fl">Classe</label>
         <input
@@ -652,7 +658,6 @@ function AddPlayerModal({ onAdd, onClose }) {
           onKeyDown={(e) => e.key === "Enter" && ok()}
         />
       </div>
-
       <div className="frow">
         <div className="fg">
           <label className="fl">PV máx.</label>
@@ -727,10 +732,10 @@ function AddEnemyModal({ onAdd, onClose }) {
 
   const ok = () => {
     const h = parseInt(hp) || (type === "boss" ? 100 : 20);
-    for (let i = 1; i <= v; i++) {
-      const n = v > 1 ? " (" + i + ")" : "";
+    const quantity = parseInt(v) || 1;
+    for (let i = 1; i <= quantity; i++) {
+      const n = quantity > 1 ? " (" + i + ")" : "";
       const nm = name.trim() || (type === "boss" ? "Boss" : "Inimigo");
-
       onAdd({
         id: uid(),
         type,
@@ -743,9 +748,8 @@ function AddEnemyModal({ onAdd, onClose }) {
   };
 
   const apply = (sign) => {
-    if (!isNaN(sign) && sign + v > 0) {
-      setV(parseInt(v) + parseInt(sign));
-    }
+    const newVal = parseInt(v) + sign;
+    if (newVal > 0) setV(String(newVal));
   };
 
   return (
@@ -793,7 +797,6 @@ function AddEnemyModal({ onAdd, onClose }) {
           </button>
         </div>
       </div>
-
       <div className="fg">
         <label className="fl">Nome (opcional)</label>
         <input
@@ -870,6 +873,7 @@ export default function App() {
   const [addPlayer, setAddPlayer] = useState(false);
   const [addEnemy, setAddEnemy] = useState(false);
   const [dragging, setDragging] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const {
     players,
@@ -883,229 +887,232 @@ export default function App() {
     setPlayers,
     setEnemies,
     saveInitiativeOrder,
+    currentCampaign,
+    campaigns,
+    switchCampaign,
+    addCampaign,
+    isOwner,
+    isViewer,
     combatMode,
-    setCombatMode,
-    settingsLoaded,
     saveCombatMode,
+    refreshCampaignsList,
   } = useSupabaseData(user?.id);
 
-  // Verificar se já existe sessão
+  // TODOS os useEffect DEVEM estar na mesma ordem sempre
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-      }
+      if (session?.user) setUser(session.user);
     });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
+  // Processar convite via URL
   useEffect(() => {
-    console.log(
-      "Players com ordem:",
-      players.map((p) => ({ name: p.name, order: p.initiative_order }))
-    );
-    console.log(
-      "Enemies com ordem:",
-      enemies.map((e) => ({ name: e.name, order: e.initiative_order }))
-    );
-  }, [players, enemies]);
+    const processJoinCode = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const joinCode = urlParams.get("join");
+
+      if (!joinCode) return;
+
+      // Limpar URL sem recarregar
+      window.history.replaceState({}, "", window.location.pathname);
+
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
+      if (!currentUser) {
+        localStorage.setItem("pendingJoinCode", joinCode);
+        return;
+      }
+
+      const { data: foundCampaigns } = await supabase
+        .from("campaigns")
+        .select("*")
+        .eq("share_code", joinCode.toUpperCase());
+
+      if (foundCampaigns && foundCampaigns.length > 0) {
+        const campaign = foundCampaigns[0];
+
+        const { data: existingMember } = await supabase
+          .from("campaign_members")
+          .select("*")
+          .eq("campaign_id", campaign.id)
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (!existingMember) {
+          // Adicionar como membro viewer
+          await supabase.from("campaign_members").insert({
+            campaign_id: campaign.id,
+            user_id: currentUser.id,
+            role: "viewer",
+          });
+
+          // Recarregar a lista de campanhas
+          if (refreshCampaignsList) {
+            await refreshCampaignsList();
+          }
+        }
+
+        // Trocar para a campanha
+        await switchCampaign(campaign);
+
+        // // Mostrar mensagem de sucesso
+        // alert(
+        //   `✅ Você entrou na campanha "${campaign.name}" como visualizador!`
+        // );
+      } else {
+        alert("❌ Código inválido!");
+      }
+    };
+
+    if (user) {
+      processJoinCode();
+    }
+  }, [user, switchCampaign, refreshCampaignsList]);
+
+  // Verificar código pendente após login
+  useEffect(() => {
+    const pendingCode = localStorage.getItem("pendingJoinCode");
+    if (pendingCode && user) {
+      localStorage.removeItem("pendingJoinCode");
+      window.location.href = `/?join=${pendingCode}`;
+    }
+  }, [user]);
+
+  useEffect(() => {
+    console.log("⚔️ Modo Combate mudou para:", combatMode);
+  }, [combatMode]);
 
   const updPlayer = (player) => {
-    setPlayers((prev) => prev.map((p) => (p.id === player.id ? player : p)));
+    // setPlayers((prev) => prev.map((p) => (p.id === player.id ? player : p)));
     savePlayer(player);
   };
-
   const delPlayer = async (id) => {
-    // Encontrar o nome do player para mostrar na confirmação
     const player = players.find((p) => p.id === id);
-    const playerName = player?.name || "este personagem";
-
-    const confirmDelete = window.confirm(
-      `Tem certeza que deseja deletar "${playerName}"? Esta ação não pode ser desfeita.`
-    );
-
-    if (confirmDelete) {
-      // 1. Limpar do front-end imediatamente
-      setPlayers((prev) => prev.filter((p) => p.id !== id));
-
-      // 2. Deletar do banco
-      try {
-        await deletePlayer(id);
-        console.log("Personagem deletado com sucesso");
-      } catch (error) {
-        console.error("Erro ao deletar:", error);
-        // Se houve erro no banco, recarregar a lista
-        // (opcional: mostrar mensagem de erro para o usuário)
-      }
+    if (window.confirm(`Deletar "${player?.name}"?`)) {
+      // setPlayers((prev) => prev.filter((p) => p.id !== id));
+      await deletePlayer(id);
     }
   };
-
   const updEnemy = (enemy) => {
-    setEnemies((prev) => prev.map((e) => (e.id === enemy.id ? enemy : e)));
+    // setEnemies((prev) => prev.map((e) => (e.id === enemy.id ? enemy : e)));
     saveEnemy(enemy);
   };
-
   const delEnemy = async (id) => {
     const enemy = enemies.find((e) => e.id === id);
-    const enemyName = enemy?.name || "este inimigo";
-
-    const confirmDelete = window.confirm(
-      `Tem certeza que deseja deletar "${enemyName}"? Esta ação não pode ser desfeita.`
-    );
-
-    if (confirmDelete) {
-      // Limpar do front-end imediatamente
-      setEnemies((prev) => prev.filter((e) => e.id !== id));
-
-      // Deletar do banco
-      try {
-        await deleteEnemy(id);
-        console.log("Inimigo deletado com sucesso");
-      } catch (error) {
-        console.error("Erro ao deletar:", error);
-      }
-    }
-  };
-
-  const handleCombatToggle = async (e) => {
-    const isCombat = e.target.checked;
-
-    if (!isCombat) {
-      // Perguntar apenas se tiver inimigos
-      if (enemies.length > 0) {
-        const confirmDelete = window.confirm(
-          `Sair do modo combate irá deletar ${enemies.length} inimigo(s). Confirmar?`
-        );
-
-        if (confirmDelete) {
-          const enemiesToDelete = [...enemies];
-          setEnemies([]);
-          for (const enemy of enemiesToDelete) {
-            await deleteEnemy(enemy.id);
-          }
-          await clearAllStatus();
-          setCombatMode(false); // ← Use setCombatMode
-          await saveCombatMode(false); // ← Salvar no banco
-        } else {
-          e.target.checked = true;
-        }
-      } else {
-        await clearAllStatus();
-        setCombatMode(false); // ← Use setCombatMode
-        await saveCombatMode(false); // ← Salvar no banco
-      }
-    } else {
-      setCombatMode(true); // ← Use setCombatMode
-      await saveCombatMode(true); // ← Salvar no banco
+    if (window.confirm(`Deletar "${enemy?.name}"?`)) {
+      // setEnemies((prev) => prev.filter((e) => e.id !== id));
+      await deleteEnemy(id);
     }
   };
 
   const clearAllStatus = async () => {
-    // Verificar se há status para limpar
     const hasStatus = players.some((p) => p.statuses?.length > 0);
-
     if (!hasStatus) return;
-
-    // Limpar status no front-end
     const playersCleaned = players.map((p) => ({ ...p, statuses: [] }));
     setPlayers(playersCleaned);
-
-    // Salvar no banco
-    for (const player of playersCleaned) {
-      await savePlayer(player);
-    }
+    for (const player of playersCleaned) await savePlayer(player);
   };
 
-  // Adicione um useEffect para carregar o modo combate ao iniciar
-  useEffect(() => {
-    if (settingsLoaded) {
-      // O combatMode já vem do hook, não precisa fazer nada
-      console.log("Modo combate carregado:", combatMode);
+  const handleCombatToggle = async (e) => {
+    const isCombat = e.target.checked;
+    if (!isCombat && enemies.length > 0) {
+      if (
+        window.confirm(
+          `Sair do combate deletará ${enemies.length} inimigo(s). Confirmar?`
+        )
+      ) {
+        const enemiesToDelete = [...enemies];
+        setEnemies([]);
+        for (const enemy of enemiesToDelete) await deleteEnemy(enemy.id);
+        await clearAllStatus();
+        await saveCombatMode(false);
+      } else {
+        e.target.checked = combatMode;
+      }
+    } else {
+      await clearAllStatus();
+      await saveCombatMode(isCombat);
     }
-  }, [settingsLoaded, combatMode]);
+  };
 
   const addNewPlayer = async (player) => {
-    // Garantir que a estrutura dos dados está correta
-    const playerData = {
-      id: player.id,
-      user_id: user.id, // Adiciona o user_id explicitamente
-      name: player.name,
-      classe: player.classe || "",
-      hp: {
-        current: player.hp.current,
-        max: player.hp.max,
-        temp: player.hp.temp || 0,
-      },
-      mp: {
-        current: player.mp.current,
-        max: player.mp.max,
-        temp: player.mp.temp || 0,
-      },
-      carga: {
-        temp: player.carga.temp || 0,
-      },
-      ouro: {
-        temp: player.ouro.temp || 0,
-      },
-      statuses: player.statuses || [],
-    };
-
-    setPlayers((prev) => [...prev, playerData]);
-    await savePlayer(playerData);
+    // setPlayers((prev) => [...prev, player]);
+    await savePlayer(player);
   };
-
-  const addNewEnemy = (enemy) => {
-    setEnemies((prev) => [...prev, enemy]);
-    saveEnemy(enemy);
+  const addNewEnemy = async (enemy) => {
+    // setEnemies((prev) => [...prev, enemy]);
+    await saveEnemy(enemy);
   };
-
+  const handleSaveInitiativeOrder = async (orderedParticipants) => {
+    await saveInitiativeOrder(orderedParticipants);
+  };
+  const handleSwitchCampaign = async (campaign) => {
+    // if (window.confirm(`Trocar para "${campaign.name}"?`))
+    await switchCampaign(campaign);
+  };
+  const handleCampaignCreated = (newCampaign) => {
+    addCampaign(newCampaign);
+    switchCampaign(newCampaign);
+  };
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
   };
 
-  if (!user) {
-    return <Login onLogin={setUser} />;
-  }
-
-  if (loading || !settingsLoaded) {
+  if (!user) return <Login onLogin={setUser} />;
+  if (loading)
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Carregando dados...</p>
+        <p>Carregando...</p>
       </div>
     );
-  }
-
-  const handleInitiativeReorder = (newOrder) => {
-    // Opcional: Salvar a ordem no banco se quiser persistir
-    console.log("Nova ordem de iniciativa:", newOrder);
-  };
-
-  const handleSaveInitiativeOrder = async (orderedParticipants) => {
-    await saveInitiativeOrder(orderedParticipants);
-  };
 
   return (
     <>
       <div className={`app ${combatMode ? "combat-mode" : "home-mode"}`}>
-        {/* Header */}
         <header className="header">
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
             <h1>⚔️ Tracker20</h1>
-            {combatMode && <span className="combat-badge">Combate</span>}
+            <CampaignSwitcher
+              campaigns={campaigns}
+              currentCampaign={currentCampaign}
+              onSwitchCampaign={handleSwitchCampaign}
+              onCampaignCreated={handleCampaignCreated}
+              isOwner={isOwner}
+              isViewer={isViewer}
+            />
+            {/* <JoinCampaign /> */}
+
+            {isOwner && (
+              <button
+                className="campaign-new-btn"
+                onClick={() => setShowShareModal(true)}
+              >
+                🔗
+              </button>
+            )}
+            {combatMode && <span className="combat-badge">⚔️ Combate</span>}
             {syncStatus === "saving" && (
               <span className="sync-status">💾 Salvando...</span>
             )}
             {syncStatus === "error" && (
-              <span className="sync-status error">⚠️ Erro ao salvar</span>
+              <span className="sync-status error">⚠️ Erro</span>
             )}
           </div>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -1120,6 +1127,7 @@ export default function App() {
                   type="checkbox"
                   checked={combatMode}
                   onChange={handleCombatToggle}
+                  disabled={isViewer}
                 />
                 <span className="tgl-s" />
               </label>
@@ -1127,19 +1135,27 @@ export default function App() {
           </div>
         </header>
 
-        {/* Restante do seu código, mas usando addNewPlayer e addNewEnemy */}
+        {showShareModal && currentCampaign && isOwner && (
+          <ShareCampaign
+            campaign={currentCampaign}
+            onClose={() => setShowShareModal(false)}
+          />
+        )}
+
         <div className="main">
           {combatMode ? (
             <div className="combat-split">
               <div className="col-allies">
                 <div className="sec-bar">
                   <span className="sec-title">🛡️ Aliados</span>
-                  <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => setAddPlayer(true)}
-                  >
-                    + Personagem
-                  </button>
+                  {!isViewer && (
+                    <button
+                      className="btn btn-ghost btn-xs"
+                      onClick={() => setAddPlayer(true)}
+                    >
+                      + Personagem
+                    </button>
+                  )}
                 </div>
                 <div className="card-grid">
                   {players.map((p) => (
@@ -1150,20 +1166,22 @@ export default function App() {
                       onRemove={() => delPlayer(p.id)}
                       anyDragging={!!dragging}
                       combat={combatMode}
+                      isViewer={isViewer}
                     />
                   ))}
                 </div>
               </div>
-
               <div className="col-enemies">
                 <div className="sec-bar">
                   <span className="sec-title">💀 Inimigos</span>
-                  <button
-                    className="btn btn-danger btn-xs"
-                    onClick={() => setAddEnemy(true)}
-                  >
-                    + Inimigo
-                  </button>
+                  {!isViewer && (
+                    <button
+                      className="btn btn-danger btn-xs"
+                      onClick={() => setAddEnemy(true)}
+                    >
+                      + Inimigo
+                    </button>
+                  )}
                 </div>
                 <div className="card-grid">
                   {enemies.map((e) => (
@@ -1173,17 +1191,17 @@ export default function App() {
                       onUpdate={updEnemy}
                       onRemove={() => delEnemy(e.id)}
                       anyDragging={!!dragging}
+                      isViewer={isViewer}
                     />
                   ))}
                 </div>
               </div>
-
               <div className="col-initiative">
                 <InitiativeList
                   players={players}
                   enemies={enemies}
-                  onReorder={handleInitiativeReorder}
                   onSaveOrder={handleSaveInitiativeOrder}
+                  isViewer={isViewer}
                 />
               </div>
             </div>
@@ -1191,12 +1209,14 @@ export default function App() {
             <>
               <div className="sec-bar">
                 <span className="sec-title">🧙 Personagens</span>
-                <button
-                  className="btn btn-primary btn-xs"
-                  onClick={() => setAddPlayer(true)}
-                >
-                  + Personagem
-                </button>
+                {!isViewer && (
+                  <button
+                    className="btn btn-primary btn-xs"
+                    onClick={() => setAddPlayer(true)}
+                  >
+                    + Personagem
+                  </button>
+                )}
               </div>
               <div className="card-grid">
                 {players.map((p) => (
@@ -1207,26 +1227,20 @@ export default function App() {
                     onRemove={() => delPlayer(p.id)}
                     anyDragging={false}
                     combat={combatMode}
+                    isViewer={isViewer}
                   />
                 ))}
-                {players.length === 0 && (
-                  <div
-                    style={{
-                      color: "var(--muted)",
-                      fontSize: ".82rem",
-                      padding: "8px 4px",
-                    }}
-                  >
-                    Nenhum personagem adicionado.
-                  </div>
-                )}
               </div>
+              {players.length === 0 && (
+                <div className="empty-message">
+                  Nenhum personagem adicionado.
+                </div>
+              )}
             </>
           )}
         </div>
 
-        {/* Status Footer */}
-        {combatMode && (
+        {combatMode && !isViewer && (
           <StatusFooter
             onDragStart={(id) => setDragging(id)}
             onDragEnd={() => setDragging(null)}
@@ -1234,7 +1248,6 @@ export default function App() {
         )}
       </div>
 
-      {/* Modals */}
       {addPlayer && (
         <AddPlayerModal
           onAdd={addNewPlayer}

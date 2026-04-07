@@ -6,6 +6,7 @@ const InitiativeItem = memo(function InitiativeItem({
   totalCount,
   onMoveUp,
   onMoveDown,
+  isViewer = false,
 }) {
   const isPlayer = participant.type === "player";
   const hpPercent = isPlayer
@@ -23,7 +24,7 @@ const InitiativeItem = memo(function InitiativeItem({
         <button
           className="btn-icon-small"
           onClick={() => onMoveUp(index)}
-          disabled={index === 0}
+          disabled={index === 0 || isViewer}
           title="Mover para cima"
         >
           ↑
@@ -31,7 +32,7 @@ const InitiativeItem = memo(function InitiativeItem({
         <button
           className="btn-icon-small"
           onClick={() => onMoveDown(index)}
-          disabled={index === totalCount - 1}
+          disabled={index === totalCount - 1 || isViewer}
           title="Mover para baixo"
         >
           ↓
@@ -52,13 +53,18 @@ const InitiativeItem = memo(function InitiativeItem({
               }}
             />
           </div>
-          <span className="hp-text">
-            {isPlayer
-              ? `${participant.hp.current}/${participant.hp.max} PV`
-              : `${participant.hp.current}/${participant.hp.max} dano`}
-          </span>
+
+          {!isViewer && (
+            <span className="hp-text">
+              {isPlayer
+                ? `${participant.hp.current}/${participant.hp.max} PV`
+                : `${participant.hp.current}/${participant.hp.max} dano`}
+            </span>
+          )}
         </div>
       </div>
+
+      <div className="drag-handle">⋮⋮</div>
     </div>
   );
 });
@@ -66,10 +72,9 @@ const InitiativeItem = memo(function InitiativeItem({
 export default function InitiativeList({
   players,
   enemies,
-  onReorder,
   onSaveOrder,
+  isViewer = false,
 }) {
-  // Combinar players e inimigos
   const createSortedList = (playersList, enemiesList) => {
     const all = [
       ...playersList.map((p) => ({
@@ -99,14 +104,13 @@ export default function InitiativeList({
     createSortedList(players, enemies)
   );
 
-  // Atualizar quando players/enemies mudarem
   useEffect(() => {
     const sorted = createSortedList(players, enemies);
     setParticipants(sorted);
   }, [players, enemies]);
 
-  // Mover para cima
   const moveUp = (index) => {
+    if (isViewer) return;
     if (index > 0) {
       const newParticipants = [...participants];
       [newParticipants[index - 1], newParticipants[index]] = [
@@ -114,7 +118,6 @@ export default function InitiativeList({
         newParticipants[index - 1],
       ];
       setParticipants(newParticipants);
-      onReorder?.(newParticipants);
 
       if (onSaveOrder) {
         onSaveOrder(newParticipants);
@@ -122,8 +125,8 @@ export default function InitiativeList({
     }
   };
 
-  // Mover para baixo
   const moveDown = (index) => {
+    if (isViewer) return;
     if (index < participants.length - 1) {
       const newParticipants = [...participants];
       [newParticipants[index + 1], newParticipants[index]] = [
@@ -131,7 +134,6 @@ export default function InitiativeList({
         newParticipants[index + 1],
       ];
       setParticipants(newParticipants);
-      onReorder?.(newParticipants);
 
       if (onSaveOrder) {
         onSaveOrder(newParticipants);
@@ -143,9 +145,7 @@ export default function InitiativeList({
     <div className="initiative-container">
       <div className="initiative-header">
         <h3>⚡ Ordem de Iniciativa</h3>
-        <span className="initiative-count">
-          {participants.length} participantes
-        </span>
+        <span className="initiative-count">#{participants.length}</span>
       </div>
       <div className="initiative-list">
         {participants.map((participant, index) => (
@@ -156,6 +156,7 @@ export default function InitiativeList({
             totalCount={participants.length}
             onMoveUp={moveUp}
             onMoveDown={moveDown}
+            isViewer={isViewer}
           />
         ))}
         {participants.length === 0 && (
