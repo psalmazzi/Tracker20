@@ -8,7 +8,6 @@ import CampaignSwitcher from "./components/CampaignSwitcher";
 import JoinCampaign from "./components/JoinCampaign";
 import ShareCampaign from "./components/ShareCampaign";
 import InitiativeList from "./components/InitiativeList";
-import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./styles.css";
 
 // ── Status effects (Tormenta RPG) ─────────────────────────────────────────────
