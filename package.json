@@ -5,10 +5,11 @@
   "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
+    "@supabase/supabase-js": "2.102.1",
+    "@vercel/analytics": "^2.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-scripts": "^5.0.0",
-    "@supabase/supabase-js": "2.102.1"
+    "react-scripts": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "19.0.0",
