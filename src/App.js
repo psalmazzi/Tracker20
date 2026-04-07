@@ -1,4 +1,5 @@
 import React, { useState, useCallback, memo, useEffect } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import Login from "./components/Login";
 import { useSupabaseData } from "./hooks/useSupabaseData";
 import { supabase } from "./supabase";
@@ -1257,6 +1258,7 @@ export default function App() {
       {addEnemy && (
         <AddEnemyModal onAdd={addNewEnemy} onClose={() => setAddEnemy(false)} />
       )}
+      <SpeedInsights />
     </>
   );
 }
