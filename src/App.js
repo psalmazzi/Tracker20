@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useEffect } from "react";
+import React, { useState, useCallback, memo, useEffect, useRef } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Login from "./components/Login";
@@ -321,6 +321,23 @@ const PlayerCard = memo(function PlayerCard({
 }) {
   const u = (patch) => onUpdate({ ...p, ...patch });
 
+  // Ref para debounce
+  const saveTimeoutRef = useRef(null);
+
+  // Função com debounce
+  const debouncedSave = useCallback(
+    (updatedPlayer) => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      saveTimeoutRef.current = setTimeout(() => {
+        onUpdate(updatedPlayer);
+        saveTimeoutRef.current = null;
+      }, 300);
+    },
+    [onUpdate]
+  );
+
   const adjHP = (delta) => {
     let { current, max, temp } = p.hp;
     if (delta < 0) {
@@ -331,7 +348,9 @@ const PlayerCard = memo(function PlayerCard({
     } else {
       current = clamp(current + delta, 0, max);
     }
-    u({ hp: { ...p.hp, current, temp } });
+    const updatedPlayer = { ...p, hp: { ...p.hp, current, temp } };
+    u(updatedPlayer); // Atualiza UI imediatamente
+    debouncedSave(updatedPlayer); // Salva depois de 300ms sem novos cliques
   };
 
   const adjMP = (delta) => {
@@ -344,7 +363,9 @@ const PlayerCard = memo(function PlayerCard({
     } else {
       current = clamp(current + delta, 0, max);
     }
-    u({ mp: { ...p.mp, current, temp } });
+    const updatedPlayer = { ...p, mp: { ...p.mp, current, temp } };
+    u(updatedPlayer);
+    debouncedSave(updatedPlayer);
   };
 
   return (
@@ -992,10 +1013,26 @@ export default function App() {
     console.log("⚔️ Modo Combate mudou para:", combatMode);
   }, [combatMode]);
 
-  const updPlayer = (player) => {
-    // setPlayers((prev) => prev.map((p) => (p.id === player.id ? player : p)));
-    savePlayer(player);
-  };
+  const pendingSavesRef = useRef({});
+
+  const updPlayer = useCallback(
+    (player) => {
+      // Atualizar UI imediatamente
+      setPlayers((prev) => prev.map((p) => (p.id === player.id ? player : p)));
+
+      // Debounce para salvar
+      if (pendingSavesRef.current[player.id]) {
+        clearTimeout(pendingSavesRef.current[player.id]);
+      }
+
+      pendingSavesRef.current[player.id] = setTimeout(async () => {
+        await savePlayer(player);
+        delete pendingSavesRef.current[player.id];
+      }, 500);
+    },
+    [savePlayer]
+  );
+
   const delPlayer = async (id) => {
     const player = players.find((p) => p.id === id);
     if (window.confirm(`Deletar "${player?.name}"?`)) {
@@ -1003,10 +1040,27 @@ export default function App() {
       await deletePlayer(id);
     }
   };
-  const updEnemy = (enemy) => {
-    // setEnemies((prev) => prev.map((e) => (e.id === enemy.id ? enemy : e)));
-    saveEnemy(enemy);
-  };
+
+  const pendingEnemySavesRef = useRef({});
+
+  const updEnemy = useCallback(
+    (enemy) => {
+      // Atualizar UI imediatamente
+      setEnemies((prev) => prev.map((e) => (e.id === enemy.id ? enemy : e)));
+
+      // Debounce para salvar
+      if (pendingEnemySavesRef.current[enemy.id]) {
+        clearTimeout(pendingEnemySavesRef.current[enemy.id]);
+      }
+
+      pendingEnemySavesRef.current[enemy.id] = setTimeout(async () => {
+        await saveEnemy(enemy);
+        delete pendingEnemySavesRef.current[enemy.id];
+      }, 500);
+    },
+    [saveEnemy]
+  );
+
   const delEnemy = async (id) => {
     const enemy = enemies.find((e) => e.id === id);
     if (window.confirm(`Deletar "${enemy?.name}"?`)) {
