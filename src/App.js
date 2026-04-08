@@ -897,6 +897,7 @@ export default function App() {
   const [addEnemy, setAddEnemy] = useState(false);
   const [dragging, setDragging] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const {
     players,
@@ -920,6 +921,18 @@ export default function App() {
     saveCombatMode,
     refreshCampaignsList,
   } = useSupabaseData(user?.id);
+
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // TODOS os useEffect DEVEM estar na mesma ordem sempre
   useEffect(() => {
@@ -1119,6 +1132,7 @@ export default function App() {
     switchCampaign(newCampaign);
   };
   const handleLogout = async () => {
+    setIsDropdownOpen(false);
     await supabase.auth.signOut();
     setUser(null);
   };
@@ -1158,34 +1172,55 @@ export default function App() {
             {isOwner && (
               <button
                 className="campaign-new-btn"
+                title="Compartilhar"
                 onClick={() => setShowShareModal(true)}
               >
                 🔗
               </button>
             )}
-            {combatMode && <span className="combat-badge">⚔️ Combate</span>}
-            {syncStatus === "saving" && (
-              <span className="sync-status">💾 Salvando...</span>
-            )}
+            {/* {combatMode && <span className="combat-badge">⚔️ Combate</span>} */}
+            {syncStatus === "saving" && <span className="sync-status">💾</span>}
             {syncStatus === "error" && (
               <span className="sync-status error">⚠️ Erro</span>
             )}
           </div>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <span className="user-email">{user.email}</span>
-            <button className="btn btn-ghost btn-xs" onClick={handleLogout}>
-              Sair
-            </button>
+            <div className="user-dropdown" ref={dropdownRef}>
+              <button
+                className="user-dropdown-btn"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                👤 {user.email.split("@")[0]}
+                <span className={`arrow ${isDropdownOpen ? "open" : ""}`}>
+                  ▼
+                </span>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="user-dropdown-menu">
+                  <div className="user-dropdown-item">{user.email}</div>
+                  <div
+                    className="user-dropdown-item logout"
+                    onClick={handleLogout}
+                  >
+                    Sair
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="tgl-wrap">
-              <span className="tgl-lbl">Modo Combate</span>
-              <label className="tgl">
+              <label className="tgl-mode">
                 <input
                   type="checkbox"
                   checked={combatMode}
                   onChange={handleCombatToggle}
                   disabled={isViewer}
                 />
-                <span className="tgl-s" />
+                <span className="tgl-mode-slider">
+                  <span className="tgl-mode-on">COMBATE</span>
+                  <span className="tgl-mode-off">CASUAL</span>
+                </span>
               </label>
             </div>
           </div>

@@ -160,7 +160,12 @@ export default function CampaignSwitcher({
           ✨
         </button>
 
-        <span className={`role-badge ${isOwner ? "owner" : "viewer"}`}>
+        <span
+          title={`${isOwner ? "Dono" : "Convidado"}`}
+          className={` campaign-new-btn role-badge ${
+            isOwner ? "owner" : "viewer"
+          }`}
+        >
           {isOwner ? "👑" : "👁️"}
         </span>
       </div>

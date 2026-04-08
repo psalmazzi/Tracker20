@@ -700,61 +700,6 @@ body {
 }
 
 /* ============================================
-   TOGGLE
-   ============================================ */
-.tgl-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.tgl-lbl {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.tgl {
-  position: relative;
-  width: 48px;
-  height: 24px;
-}
-
-.tgl input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.tgl-s {
-  position: absolute;
-  inset: 0;
-  background: var(--border);
-  border-radius: 24px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.tgl-s::before {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  top: 3px;
-  left: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: transform 0.3s;
-}
-
-.tgl input:checked + .tgl-s {
-  background: var(--danger);
-}
-
-.tgl input:checked + .tgl-s::before {
-  transform: translateX(24px);
-}
-
-/* ============================================
    SYNC STATUS
    ============================================ */
 .sync-status {
@@ -1178,9 +1123,9 @@ body {
 .campaign-selector {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: rgba(0, 0, 0, 0.3);
-  padding: 4px 12px;
+  padding: 4px 0px 4px 12px;
   border-radius: 40px;
 }
 
@@ -1725,4 +1670,171 @@ body {
 .campaign-btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Switch elegante - Texto fixo */
+.tgl-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.tgl-mode {
+  position: relative;
+  display: inline-block;
+  width: 120px;
+  height: 30px;
+}
+
+.tgl-mode input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.tgl-mode-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #334155;
+  border-radius: 36px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.tgl-mode-on,
+.tgl-mode-off {
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.tgl-mode-on {
+  color: white;
+  opacity: 0;
+  width: 0px;
+}
+
+.tgl-mode-off {
+  color: #94a3b8;
+  opacity: 1;
+  width: -100px;
+}
+
+.tgl-mode-slider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 5px;
+  left: 5px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  z-index: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Modo Combate ativo */
+.tgl-mode input:checked + .tgl-mode-slider {
+  background: #ef4444;
+}
+
+.tgl-mode input:checked + .tgl-mode-slider .tgl-mode-on {
+  opacity: 1;
+}
+
+.tgl-mode input:checked + .tgl-mode-slider .tgl-mode-off {
+  opacity: 0;
+}
+
+.tgl-mode input:checked + .tgl-mode-slider::before {
+  transform: translateX(90px);
+}
+
+/* Desabilitado */
+.tgl-mode input:disabled + .tgl-mode-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dropdown do usuário */
+.user-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.user-dropdown-btn {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.user-dropdown-btn:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: var(--accent);
+}
+
+.user-dropdown-btn .arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+
+.user-dropdown-btn .arrow.open {
+  transform: rotate(180deg);
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.user-dropdown-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-dropdown-item:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.user-dropdown-item.logout {
+  color: #ef4444;
+  border-top: 1px solid var(--border);
+}
+
+.user-dropdown-item.logout:hover {
+  background: rgba(239, 68, 68, 0.15);
 }
