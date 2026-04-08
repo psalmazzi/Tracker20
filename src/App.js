@@ -10,7 +10,7 @@ import ShareCampaign from "./components/ShareCampaign";
 import InitiativeList from "./components/InitiativeList";
 import "./styles.css";
 
-// ── Status effects (Tormenta RPG) ─────────────────────────────────────────────
+// ── Status effects (RPG) ─────────────────────────────────────────────
 const STATUSES = [
   { id: "abalado", label: "Abalado", emoji: "😰", color: "#f59e0b" },
   { id: "apavorado", label: "Apavorado", emoji: "😱", color: "#ef4444" },

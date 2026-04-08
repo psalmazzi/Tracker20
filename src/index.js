@@ -8,7 +8,7 @@ const root = createRoot(rootElement);
 
 root.render(
   <StrictMode>
-    <title>Tracker20 - Tormenta20 RPG Tracker</title>
+    <title>Tracker20</title>
     <App />
   </StrictMode>
 );
